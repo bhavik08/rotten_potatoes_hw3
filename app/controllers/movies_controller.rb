@@ -11,12 +11,29 @@ class MoviesController < ApplicationController
   end
 
   def index
+    
     if (params.has_key?(:sort))
       @sort = params[:sort]
       @movies = Movie.order(@sort)
     else
       @movies = Movie.all
     end
+    
+    @selected = {}
+    @all_ratings = ['G', 'PG', 'PG-13', 'R']
+    
+    @all_ratings.each { |rating|
+      if params[:ratings] != nil
+        @selected[rating] = params[:ratings].has_key?(rating)
+      else
+        @selected[rating] = true
+      end
+    }
+    
+    if params[:ratings] != nil
+      @movies = @movies.find_all{ |m| params[:ratings].has_key?(m.rating)}
+    end
+    
   end
 
   def new
