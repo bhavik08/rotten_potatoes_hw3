@@ -12,21 +12,43 @@ class MoviesController < ApplicationController
 
   def index
     
+    @redir = 0
+    @movies = Movie.all
+    
+    if(@selected != nil)
+      @movies = @movies.find_all{ |m| @selected.has_key?(m.rating) and  @selected[m.rating]==true}      
+    end
+    
     if (params.has_key?(:sort))
+      session[:sort] = params[:sort]
       @sort = params[:sort]
       @movies = Movie.order(@sort)
-    else
-      @movies = Movie.all
+    elsif session.has_key?(:sort)
+      params[:sort] = session[:sort]
+      @redir = 1
+      # @movies = Movie.all
+    end
+    
+    if (params[:ratings] != nil)
+      session[:ratings] = params[:ratings]
+      @movies = @movies.find_all{ |m| params[:ratings].has_key?(m.rating) }
+    elsif session.has_key?(:ratings)
+      params[:ratings] = session[:ratings]
+      @redir = 1
+    end
+    
+    if (@redir == 1)
+      redirect_to movies_path(:sort => params[:sort], :ratings => params[:ratings])
     end
     
     @selected = {}
     @all_ratings = ['G', 'PG', 'PG-13', 'R']
     
     @all_ratings.each { |rating|
-      if params[:ratings] != nil
-        @selected[rating] = params[:ratings].has_key?(rating)
+      if params[:ratings] == nil
+        @selected[rating] = false
       else
-        @selected[rating] = true
+        @selected[rating] = params[:ratings].has_key?(rating)
       end
     }
     
