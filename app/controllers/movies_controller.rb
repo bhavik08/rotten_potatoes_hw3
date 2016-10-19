@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-
+  
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -11,7 +11,12 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    if (params.has_key?(:sort))
+      @sort = params[:sort]
+      @movies = Movie.order(@sort)
+    else
+      @movies = Movie.all
+    end
   end
 
   def new
@@ -41,5 +46,13 @@ class MoviesController < ApplicationController
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
   end
-
+  
+  helper_method :get_dynamic_class
+  def get_dynamic_class(class_name)
+    if (@sort == class_name)
+      return 'hilite'
+    else
+      return nil
+    end
+  end
 end
